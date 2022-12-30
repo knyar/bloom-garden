@@ -1,0 +1,26 @@
+version: "3.4"
+services:
+  exporter:
+    build:
+      context: .
+    restart: always
+    volumes:
+      - ./:/app/src
+      - output:/app/output
+    command: 
+      python3 exporter.py --input_dir /app/src/input --config_file /app/src/config.toml
+      --athens_export /app/athens-export --obsidian_zola /app/obsidian-zola
+      --temp_dir /tmp/exporter --out_dir /app/output
+      --debug --interval_sec 5 --wait_sec 10
+
+  nginx:
+    restart: always
+    image: nginx:stable-alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - output:/app/output
+    ports:
+      - 5102:80
+
+volumes:
+  output:
