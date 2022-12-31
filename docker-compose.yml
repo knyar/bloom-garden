@@ -4,14 +4,19 @@ services:
     build:
       context: .
     restart: always
+    runtime: runsc
+    # TODO: packaging athens-export in a jar should allow removing this and
+    # blocking exporter from having internet access.
+    network_mode: bridge
     volumes:
-      - ./:/app/src
+      - ./:/app/src:ro
       - output:/app/output
-    command: 
-      python3 exporter.py --input_dir /app/src/input --config_file /app/src/config.toml
+      - athens_athens_datascript:/app/input:ro
+    command:
+      python3 exporter.py --input_dir /app/input/persist --config_file /app/src/config.toml
       --athens_export /app/athens-export --obsidian_zola /app/obsidian-zola
       --temp_dir /tmp/exporter --out_dir /app/output
-      --debug --interval_sec 5 --wait_sec 10
+      --debug
 
   nginx:
     restart: always
@@ -24,3 +29,5 @@ services:
 
 volumes:
   output:
+  athens_athens_datascript:
+    external: true
