@@ -22,7 +22,7 @@ def is_empty(filename):
                 return False
     return True
 
-def remove_empty_md(dirname):
+def cleanup_md_files(dirname):
     for root, dirs, files in os.walk(dirname):
         for name in files:
             if not name.endswith('.md'):
@@ -32,6 +32,12 @@ def remove_empty_md(dirname):
                 logging.info("Removing empty file %s", fname)
                 os.unlink(fname)
                 continue
+
+            name = name.removesuffix('.md')
+            if name != name.strip():
+                newname = os.path.join(root, name.strip() + ".md")
+                logging.info("Renaming %s to %s", fname, newname)
+                os.rename(fname, newname)
 
 def run(cmd, **kwargs):
     logging.info("Running %s", cmd)
@@ -52,8 +58,8 @@ def export_dump(args, filepath):
         ":logseq", '"{}"'.format(logseq_dir)]
     run(cmd, cwd=args.athens_export)
 
-    logging.info("Removing empty files")
-    remove_empty_md(logseq_dir)
+    logging.info("Cleaning up .md files")
+    cleanup_md_files(logseq_dir)
 
     build_dir = os.path.join(args.temp_dir, "build")
     rmtree(build_dir)
